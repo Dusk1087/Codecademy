@@ -1,0 +1,58 @@
+from flask import Flask
+from helper import pets
+
+app = Flask(__name__)
+
+#
+@app.route('/')
+def index():
+    #Content for the home page
+    return '''
+    <h1> Adopt a pet </h1>
+    <p> Browse through the links below to find your new furry friend: </p>
+    <ul> 
+    <li><a href='/animals/dogs'> Dogs </a> 
+    <li><a href='/animals/cats'> Cats </a>
+    <li><a href='/animals/rabbits'> Rabbits </a>
+    </ul>
+    '''
+
+@app.route('/animals/<pet_type>')
+def animals(pet_type):
+    # Generate a page that lists all pets of a particular type (e.g., dogs, cats).
+    html = f"List of {pet_type}"
+    html += "<ul>"
+    # Using enumerate to get both index (idx) and pet dictionary
+    for idx, pet in enumerate(pets.get(pet_type, [])):
+        # Creating a link for each pet with the proper index.
+        html += f"<li><a href='/animals/{pet_type}/{idx}'>{pet['name']}</a></li>"
+    html += "</ul>"
+    return html
+
+@app.route('/animals/<pet_type>/<int:pet_id>')
+def pet(pet_type,pet_id):
+    # Retrieve the list of pets for the given pet_type
+    pet_list = pets.get(pet_type, [])
+    
+    # Check if pet_id is valid 
+    if pet_id < 0 or pet_id >= len(pet_list):
+        return "<h1>Pet not found</h1>", 404
+    
+    # Retrieve the specific pet by its ID
+    pet = pet_list[pet_id]
+
+    # Initialize HTML content for the pet profile
+    html = f"<h1>{pet['name']}</h1>"
+    #Add iamge for the pet's photo
+    html += f"<img src='{pet['url']}' alt='Image of {pet['name']}'>"
+    # Add pet description
+    html += f"<p>Description: {pet['description']}</p>"
+    # Add URL
+    html += f"<p>URL: {pet['url']}</p>"
+    # Add unordered list with breed and age
+    html += "<ul>"
+    html += f"<li>Age: {pet['age']}</li>"
+    html += f"<li>Breed: {pet['breed']}</li>"
+    html += "</ul>"
+ 
+    return html
